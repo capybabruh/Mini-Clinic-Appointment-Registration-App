@@ -1,106 +1,363 @@
-# Mini Clinic App 🏥
+# Mini Clinic Appointment System
 
-Một ứng dụng web PHP nhỏ gọn dùng để hiển thị danh sách lịch khám và xử lý đăng ký lịch khám bệnh thông qua API. Dự án được viết bằng PHP thuần, tuân thủ kiến trúc MVC cơ bản và sử dụng `vlucas/phpdotenv` để quản lý biến môi trường.
-
----
-
-## 🚀 Yêu cầu hệ thống
-
-* **PHP:** Phiên bản 7.4 hoặc mới hơn (khuyên dùng PHP 8.x).
-* **Composer:** Để cài đặt các thư viện phụ thuộc (dependencies).
+A simple PHP application for managing clinic appointments. The project demonstrates routing, environment configuration, MVC-style organization, HTTP methods, JSON APIs, and proper HTTP status code handling.
 
 ---
 
-## 🛠️ Hướng dẫn cài đặt
+## Features
 
-**Bước 1: Cài đặt các thư viện (Dependencies)**
-Mở terminal tại thư mục gốc của dự án và chạy lệnh:
-```bash
-composer install
-Bước 2: Thiết lập file môi trường (.env)
-Tạo một file có tên là .env ở thư mục gốc của dự án và khai báo tên phòng khám của bạn:
+### Home Page
 
-Code snippet
-CLINIC_NAME="Tên Phòng Khám Của Bạn"
-Bước 3: Khởi chạy máy chủ (Local Server)
-Sử dụng PHP Built-in Server để chạy ứng dụng (giả sử file routing chính của bạn nằm ở thư mục gốc hoặc thư mục public):
+* Display clinic information from `.env`
+* Show available appointments
+* Display doctor name, appointment date, available slots, and status
 
-Bash
-php -S localhost:8000
-Truy cập http://localhost:8000 trên trình duyệt để xem trang chủ.
+### Appointment API
 
-📂 Cấu trúc dự án tham khảo
-Plaintext
-/
+#### GET /appointments
+
+Returns the list of available appointments.
+
+#### POST /appointments
+
+Registers a patient for an appointment.
+
+#### HEAD /appointments
+
+Returns response headers without a response body.
+
+#### OPTIONS /appointments
+
+Returns supported HTTP methods.
+
+---
+
+## Project Structure
+
+```text
+project/
+│
+├── public/
+│   └── index.php
+│
 ├── src/
 │   ├── Controller/
-│   │   └── AppointmentController.php # Xử lý logic API và Web
+│   │   └── AppointmentController.php
+│   │
 │   ├── Data/
-│   │   └── appointments.php          # Dữ liệu tĩnh (Mock database)
+│   │   └── appointments.php
+│   │
 │   └── Support/
-│       └── Env.php                   # Helper đọc biến môi trường
+│       └── Env.php
+│
 ├── views/
-│   └── home.php                      # Giao diện trang chủ (Web View)
-├── vendor/                           # Thư mục chứa thư viện Composer
-├── .env                              # File cấu hình môi trường
-├── index.php                         # Entry point (Router)
+│   └── home.php
+│
+├── vendor/
+│
+├── .env
+├── composer.json
 └── README.md
-📡 Tài liệu API (API Endpoints)
-1. Trang chủ (Web View)
-URL: /
+```
 
-Method: GET
+---
 
-Mô tả: Trả về giao diện HTML hiển thị tên phòng khám và danh sách các lịch khám hiện có.
+## Requirements
 
-2. Lấy danh sách lịch khám
-URL: /appointments
+* PHP 8.0+
+* Composer
 
-Method: GET
+---
 
-Mô tả: Trả về toàn bộ dữ liệu lịch khám dưới dạng JSON.
+## Installation
 
-Response: 200 OK
+### 1. Clone the repository
 
-3. Đăng ký lịch khám
-URL: /appointments
+```bash
+git clone <repository-url>
+cd mini-clinic
+```
 
-Method: POST
+### 2. Install dependencies
 
-Headers:
+```bash
+composer install
+```
 
+### 3. Create .env file
+
+```env
+CLINIC_NAME=Mini Clinic
+```
+
+### 4. Start local server
+
+```bash
+php -S localhost:8000 -t public
+```
+
+Open:
+
+```text
+http://localhost:8000
+```
+
+---
+
+## API Endpoints
+
+### GET /appointments
+
+Request:
+
+```http
+GET /appointments
+```
+
+Response:
+
+```json
+[
+  {
+    "id": 1,
+    "doctor": "Dr. An",
+    "date": "2026-05-01",
+    "total": 10,
+    "available": 3,
+    "status": "Open"
+  }
+]
+```
+
+Status Code:
+
+```text
+200 OK
+```
+
+---
+
+### POST /appointments
+
+Request:
+
+```http
+POST /appointments
 Content-Type: application/json
+```
 
-Body (JSON):
+Body:
 
-JSON
+```json
 {
   "patient_name": "Nguyen Van A",
   "appointment_id": 1,
   "quantity": 1
 }
-(Lưu ý: quantity là không bắt buộc, mặc định hệ thống kiểm tra logic dựa trên số lượng chỗ còn trống available).
+```
 
-Responses:
+Successful Response:
 
-201 Created: Đăng ký thành công.
+```json
+{
+  "message": "Appointment registered successfully",
+  "patient_name": "Nguyen Van A",
+  "appointment_id": 1
+}
+```
 
-404 Not Found: Không tìm thấy ID lịch khám (appointment_id).
+Status Code:
 
-415 Unsupported Media Type: Sai định dạng Content-Type (Bắt buộc là application/json).
+```text
+201 Created
+```
 
-422 Unprocessable Entity: Dữ liệu đầu vào không hợp lệ (sai định dạng JSON, thiếu tên, hết chỗ,...).
+---
 
-4. Kiểm tra Header
-URL: /appointments
+## Error Handling
 
-Method: HEAD
+### 415 Unsupported Media Type
 
-Mô tả: Trả về HTTP Headers (không có body) chứa thông tin X-Resource: appointments.
+Occurs when request Content-Type is not application/json.
 
-5. Kiểm tra phương thức được hỗ trợ
-URL: /appointments
+Response:
 
-Method: OPTIONS
+```json
+{
+  "error": "Unsupported Media Type"
+}
+```
 
-Mô tả: Trả về danh sách các HTTP Methods được API này hỗ trợ (GET, POST, HEAD, OPTIONS).
+---
+
+### 422 Invalid JSON
+
+Response:
+
+```json
+{
+  "error": "Invalid JSON"
+}
+```
+
+---
+
+### 422 Missing Patient Name
+
+Response:
+
+```json
+{
+  "error": "Patient name is required"
+}
+```
+
+---
+
+### 422 Invalid Patient Name Type
+
+Response:
+
+```json
+{
+  "error": "Patient name must be string"
+}
+```
+
+---
+
+### 422 Missing Appointment ID
+
+Response:
+
+```json
+{
+  "error": "Appointment ID is required"
+}
+```
+
+---
+
+### 422 Invalid Appointment ID Type
+
+Response:
+
+```json
+{
+  "error": "Appointment ID must be integer"
+}
+```
+
+---
+
+### 404 Appointment Not Found
+
+Response:
+
+```json
+{
+  "error": "Appointment not found"
+}
+```
+
+---
+
+### 422 No Slots Available
+
+Response:
+
+```json
+{
+  "error": "No slots available"
+}
+```
+
+---
+
+### 422 Exceeds Available Slots
+
+Response:
+
+```json
+{
+  "error": "Exceeds available slots"
+}
+```
+
+---
+
+### 405 Method Not Allowed
+
+Response:
+
+```json
+{
+  "error": "Method Not Allowed"
+}
+```
+
+---
+
+### 404 Not Found
+
+Response:
+
+```json
+{
+  "error": "Not Found"
+}
+```
+
+---
+
+## Supported HTTP Methods
+
+| Endpoint      | Method  | Description            |
+| ------------- | ------- | ---------------------- |
+| /             | GET     | Home page              |
+| /appointments | GET     | List appointments      |
+| /appointments | POST    | Register appointment   |
+| /appointments | HEAD    | Return headers only    |
+| /appointments | OPTIONS | Return allowed methods |
+
+---
+
+## Sample cURL Commands
+
+### Get Appointments
+
+```bash
+curl http://localhost:8000/appointments
+```
+
+### Register Appointment
+
+```bash
+curl -X POST http://localhost:8000/appointments \
+-H "Content-Type: application/json" \
+-d '{
+  "patient_name":"Nguyen Van A",
+  "appointment_id":1,
+  "quantity":1
+}'
+```
+
+### HEAD Request
+
+```bash
+curl -I http://localhost:8000/appointments
+```
+
+### OPTIONS Request
+
+```bash
+curl -X OPTIONS http://localhost:8000/appointments
+```
+
+---
+
+## Author
+
+Mini Clinic Appointment System
+
+Developed for learning purposes: PHP Routing, MVC Structure, RESTful API Design, HTTP Methods, Status Codes, and Environment Configuration.
